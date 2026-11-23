@@ -1,0 +1,6 @@
+{
+  "name": "SCN Shilok Cable Network - ISP Manager",
+  "description": "Professional ISP client management, dual collector billing, router remote access, client portal, Excel-style KYC sheet, and printable PDF invoices for Shilok Cable Network.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

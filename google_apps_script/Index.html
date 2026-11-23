@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SCN [Shilok Cable Network] - সবার জন্য ইন্টারনেট</title>
+  
+  <!-- Tailwind CSS & Google Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- QR Code Generator -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
+      background-color: #020617;
+      color: #f8fafc;
+    }
+    @media print {
+      body { background-color: #ffffff !important; color: #000000 !important; }
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+    }
+    @media screen {
+      .print-only { display: none !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-slate-900">
+
+  <!-- TOP HEADER / NAVBAR -->
+  <header class="no-print sticky top-0 z-40 bg-slate-950/90 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="flex items-center justify-between h-16 sm:h-20 gap-2">
+        
+        <!-- SCN Logo & Dialogue -->
+        <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('dashboard')">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-600 to-blue-700 flex items-center justify-center p-1.5 shadow-lg shadow-cyan-500/20">
+            <span class="font-black text-white text-base tracking-tighter">SCN</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-extrabold text-white text-base">Shilok Cable Network</span>
+              <span class="text-[9px] font-bold px-1.5 py-0.2 bg-cyan-500/20 text-cyan-300 rounded border border-cyan-500/40">ISP</span>
+            </div>
+            <div class="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+              <span>❖ সবার জন্য ইন্টারনেট</span>
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop Navigation Tabs -->
+        <nav class="hidden md:flex items-center gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 text-xs font-bold">
+          <button onclick="switchTab('dashboard')" id="btn-dashboard" class="px-3.5 py-2 rounded-xl bg-cyan-500 text-slate-950 transition">ড্যাশবোর্ড</button>
+          <button onclick="switchTab('excel')" id="btn-excel" class="px-3.5 py-2 rounded-xl text-slate-400 hover:text-white transition">এক্সেল শিট</button>
+          <button onclick="switchTab('collector')" id="btn-collector" class="px-3.5 py-2 rounded-xl text-slate-400 hover:text-white transition">বিল কালেকশন</button>
+          <button onclick="switchTab('print')" id="btn-print" class="px-3.5 py-2 rounded-xl text-slate-400 hover:text-white transition">মাসিক প্রিন্ট শিট</button>
+          <button onclick="switchTab('client_portal')" id="btn-client_portal" class="px-3.5 py-2 rounded-xl text-emerald-400 hover:text-emerald-300 transition">গ্রাহক পোর্টাল</button>
+        </nav>
+
+        <!-- Sync Indicator -->
+        <div class="flex items-center gap-2">
+          <button onclick="loadAllDataFromSheet()" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-400 border border-slate-800 text-xs font-semibold flex items-center gap-1.5" title="গুগল শিট থেকে ডেটা রিফ্রেশ">
+            <span id="sync-spinner" class="inline-block">↻</span>
+            <span class="hidden sm:inline">শিট সিঙ্ক</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Mobile navigation bar -->
+      <div class="flex md:hidden overflow-x-auto py-2 gap-2 border-t border-slate-800/80 text-xs font-bold scrollbar-none">
+        <button onclick="switchTab('dashboard')" class="px-3 py-1.5 rounded-xl bg-slate-900 text-white whitespace-nowrap">ড্যাশবোর্ড</button>
+        <button onclick="switchTab('excel')" class="px-3 py-1.5 rounded-xl bg-slate-900 text-slate-400 whitespace-nowrap">এক্সেল শিট</button>
+        <button onclick="switchTab('collector')" class="px-3 py-1.5 rounded-xl bg-slate-900 text-slate-400 whitespace-nowrap">কালেকশন</button>
+        <button onclick="switchTab('print')" class="px-3 py-1.5 rounded-xl bg-slate-900 text-slate-400 whitespace-nowrap">প্রিন্ট শিট</button>
+        <button onclick="switchTab('client_portal')" class="px-3 py-1.5 rounded-xl bg-slate-900 text-emerald-400 whitespace-nowrap">গ্রাহক পোর্টাল</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6">
+
+    <!-- TAB 1: DASHBOARD -->
+    <section id="tab-dashboard" class="space-y-6">
+      <!-- Hero Banner -->
+      <div class="bg-gradient-to-r from-slate-900 via-slate-850 to-indigo-950 rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-2xl relative overflow-hidden">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <span class="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 font-bold text-xs uppercase tracking-wider border border-cyan-500/30">GOOGLE APPS SCRIPT WEB APP</span>
+            <h1 class="text-2xl sm:text-3xl font-black text-white mt-2">শিলক কেবল নেটওয়ার্ক (SCN)</h1>
+            <p class="text-xs sm:text-sm text-slate-300 mt-1">সবার জন্য ইন্টারনেট • গুগল শিটের সাথে সম্পূর্ণ ক্লাউড সিঙ্ককৃত ম্যানেজমেন্ট সিস্টেম।</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="switchTab('collector')" class="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-lg transition">বিল কালেকশন শুরু</button>
+            <button onclick="switchTab('print')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition">মাসিক শিট প্রিন্ট</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl">
+          <span class="text-xs text-slate-400">মোট ক্লায়েন্ট</span>
+          <div id="stat-total-clients" class="text-2xl sm:text-3xl font-black text-white mt-1">০</div>
+          <span id="stat-active-clients" class="text-[11px] text-emerald-400 mt-1 block">০ জন সচল (ON)</span>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl">
+          <span class="text-xs text-slate-400">চলতি মাসের দাবি</span>
+          <div id="stat-total-expected" class="text-2xl sm:text-3xl font-black text-white mt-1">৳ ০</div>
+          <span class="text-[11px] text-slate-500 mt-1 block">বকেয়া সহ মোট বিল</span>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl">
+          <span class="text-xs text-slate-400">মোট আদায় (Collected)</span>
+          <div id="stat-total-collected" class="text-2xl sm:text-3xl font-black text-emerald-400 mt-1">৳ ০</div>
+          <span id="stat-receipt-count" class="text-[11px] text-emerald-300 mt-1 block">০ টি রশিদ</span>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl">
+          <span class="text-xs text-slate-400">অবশিষ্ট বকেয়া (Due)</span>
+          <div id="stat-total-due" class="text-2xl sm:text-3xl font-black text-rose-400 mt-1">৳ ০</div>
+          <span class="text-[11px] text-slate-500 mt-1 block">ফিল্ড কালেকশন বাকি</span>
+        </div>
+      </div>
+
+      <!-- 2 Collectors Summary -->
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
+        <h2 class="text-base font-bold text-white">২ জন কালেক্টরের বর্তমান জমার হিসাব</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+            <div>
+              <span class="text-xs text-cyan-400 font-bold block">কালেক্টর ১ (জামাল আহমেদ)</span>
+              <div id="c1-total-amount" class="text-xl font-black text-white mt-1">৳ ০</div>
+              <span class="text-[10px] text-slate-400">শিলক বাজার ও কলেজ রোড</span>
+            </div>
+            <button onclick="selectCollector('C1'); switchTab('collector')" class="px-3 py-1.5 rounded-xl bg-cyan-600/30 text-cyan-300 text-xs font-semibold">কালেক্ট করুন</button>
+          </div>
+          <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+            <div>
+              <span class="text-xs text-emerald-400 font-bold block">কালেক্টর ২ (কামাল হোসেন)</span>
+              <div id="c2-total-amount" class="text-xl font-black text-white mt-1">৳ ০</div>
+              <span class="text-[10px] text-slate-400">দক্ষিণ শিলক ও পাহাড়তলী</span>
+            </div>
+            <button onclick="selectCollector('C2'); switchTab('collector')" class="px-3 py-1.5 rounded-xl bg-emerald-600/30 text-emerald-300 text-xs font-semibold">কালেক্ট করুন</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: EXCEL SPREADSHEET VIEW -->
+    <section id="tab-excel" class="hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-black text-white">মডার্ন এক্সেল ক্লায়েন্ট ডেটাবেজ</h2>
+          <p class="text-xs text-slate-400">গুগল শিটের লাইভ ক্লায়েন্ট তালিকা ও অন/অফ স্ট্যাটাস</p>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <input type="text" id="excel-search" oninput="renderExcelTable()" placeholder="সার্চ করুন (নাম, মোবাইল, PPPoE, আইপি)..." class="bg-slate-950 border border-slate-700 px-3 py-2 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400 w-full sm:w-64">
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-x-auto shadow-2xl">
+        <table class="w-full text-left text-xs whitespace-nowrap">
+          <thead class="bg-slate-950 text-slate-300 font-bold border-b border-slate-800">
+            <tr>
+              <th class="py-3 px-3">ক্র.</th>
+              <th class="py-3 px-3">আইডি</th>
+              <th class="py-3 px-3">লাইন (ON/OFF)</th>
+              <th class="py-3 px-3">গ্রাহকের নাম ও পিতা</th>
+              <th class="py-3 px-3">মোবাইল</th>
+              <th class="py-3 px-3">এলাকা ও বক্স</th>
+              <th class="py-3 px-3">PPPoE</th>
+              <th class="py-3 px-3">আইপি</th>
+              <th class="py-3 px-3">প্যাকেজ</th>
+              <th class="py-3 px-3 text-right">মাসিক ফি</th>
+              <th class="py-3 px-3 text-right">বকেয়া</th>
+              <th class="py-3 px-3 text-right">মোট বাকি</th>
+              <th class="py-3 px-3">রাউটার আইপি ও পাসওয়ার্ড</th>
+            </tr>
+          </thead>
+          <tbody id="excel-table-body" class="divide-y divide-slate-800 text-slate-300">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 3: COLLECTOR BILL COLLECTION PORTAL -->
+    <section id="tab-collector" class="hidden space-y-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+        
+        <!-- Collector Chooser -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-slate-800 gap-3">
+          <div>
+            <h2 class="text-base font-bold text-white">বিল কালেকশন ফরম</h2>
+            <p class="text-xs text-slate-400">গ্রাহক নির্বাচন করে শুধুমাত্র টাকার পরিমাণ ইনপুট করুন।</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400">বর্তমান কালেক্টর:</span>
+            <select id="collector-select" onchange="onCollectorChanged()" class="bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-xl text-xs text-cyan-300 font-bold">
+              <option value="C1">কালেক্টর ১ - জামাল আহমেদ</option>
+              <option value="C2">কালেক্টর ২ - কামাল হোসেন</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+          <!-- Client Search -->
+          <div class="lg:col-span-5 space-y-3">
+            <label class="block text-xs font-bold text-slate-400">১. গ্রাহক খুঁজুন (আইডি, নাম বা PPPoE)</label>
+            <input type="text" id="collector-client-search" oninput="renderCollectorSearch()" placeholder="যেমন: sb-jamalNT বা SCN-0001" class="w-full bg-slate-950 border border-slate-700 px-4 py-2.5 rounded-2xl text-xs text-white focus:outline-none focus:border-cyan-400">
+            <div id="collector-search-results" class="space-y-2 max-h-72 overflow-y-auto">
+              <!-- Rendered items -->
+            </div>
+          </div>
+
+          <!-- Collection Input Box -->
+          <div class="lg:col-span-7 bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4">
+            <h3 class="text-sm font-bold text-white">২. বিল জমা এন্ট্রি</h3>
+            
+            <div id="selected-client-preview" class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs text-slate-400">
+              কোন ক্লায়েন্ট সিলেক্ট করা নেই। বাম পাশের তালিকা থেকে ক্লায়েন্ট সিলেক্ট করুন।
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">জমার পরিমাণ (টাকা) *</label>
+                <input type="number" id="input-amount" placeholder="যেমন: 800" class="w-full bg-slate-900 border border-slate-700 px-3 py-2 text-white font-bold rounded-xl text-sm focus:outline-none focus:border-cyan-400">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">পেমেন্ট মাধ্যম</label>
+                <select id="input-method" class="w-full bg-slate-900 border border-slate-700 px-3 py-2 text-white rounded-xl text-xs">
+                  <option value="Cash">ক্যাশ নগদ (Cash)</option>
+                  <option value="bKash">বিকাশ (bKash)</option>
+                  <option value="Nagad">নগদ (Nagad)</option>
+                </select>
+              </div>
+            </div>
+
+            <button onclick="submitBillCollection()" id="btn-submit-collection" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black text-sm shadow-lg transition">বিল জমা করুন ও রশিদ প্রস্তুত করুন</button>
+
+            <div id="collection-error-box" class="hidden p-3 bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs rounded-xl"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 4: MONTHLY COLLECTION PRINT SHEET -->
+    <section id="tab-print" class="hidden space-y-4">
+      <div class="no-print bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">মাসিক কালেকশন শিট (A4 Print / PDF)</h2>
+          <p class="text-xs text-slate-400">ফিল্ডে বিল সংগ্রহের জন্য প্রিন্ট করুন।</p>
+        </div>
+        <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition">প্রিন্ট / PDF সেভ</button>
+      </div>
+
+      <!-- Printable Area -->
+      <div class="bg-white text-slate-900 p-6 rounded-2xl shadow-xl border border-slate-300 text-xs font-sans">
+        <div class="flex items-center justify-between border-b-2 border-slate-900 pb-4">
+          <div>
+            <div class="text-xl font-black text-slate-900">SCN [Shilok Cable Network]</div>
+            <div class="text-xs text-emerald-700 font-bold">❖ সবার জন্য ইন্টারনেট ❖</div>
+            <div class="text-[10px] text-slate-600">হেড অফিস: শিলক বাজার, রাঙ্গুনিয়া, চট্টগ্রাম • হেল্পলাইন: 01819-876543</div>
+          </div>
+          <div class="text-right">
+            <h1 class="text-base font-bold text-slate-800">মাসিক বিল কালেকশন শিট</h1>
+            <div id="print-month-name" class="text-xs font-bold text-cyan-800">নভেম্বর ২০২৬</div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto mt-4">
+          <table class="w-full border-collapse border border-slate-400 text-[11px]">
+            <thead>
+              <tr class="bg-slate-200 border-b border-slate-400">
+                <th class="border border-slate-400 p-1.5 text-center">ক্র.</th>
+                <th class="border border-slate-400 p-1.5">আইডি ও PPPoE</th>
+                <th class="border border-slate-400 p-1.5">গ্রাহকের নাম</th>
+                <th class="border border-slate-400 p-1.5">মোবাইল</th>
+                <th class="border border-slate-400 p-1.5">এলাকা ও বক্স</th>
+                <th class="border border-slate-400 p-1.5 text-right">মাসিক ফি</th>
+                <th class="border border-slate-400 p-1.5 text-right">বকেয়া</th>
+                <th class="border border-slate-400 p-1.5 text-right bg-slate-300">মোট দাবি</th>
+                <th class="border border-slate-400 p-1.5 text-center w-24">আদায় জমা</th>
+                <th class="border border-slate-400 p-1.5 text-center">গ্রাহক স্বাক্ষর</th>
+              </tr>
+            </thead>
+            <tbody id="print-sheet-body">
+              <!-- Rendered items -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: PASSWORDLESS CLIENT PORTAL & ROUTER ACCESS -->
+    <section id="tab-client_portal" class="hidden space-y-6">
+      <div class="max-w-xl mx-auto bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl">
+        <div class="text-center">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-600 to-blue-600 mx-auto flex items-center justify-center font-black text-white text-lg">SCN</div>
+          <h2 class="text-lg font-black text-white mt-3">গ্রাহক সেলফ-সার্ভিস ও রাউটার অ্যাক্সেস</h2>
+          <p class="text-xs text-slate-400">পাসওয়ার্ড ছাড়া সহজে আপনার PPPoE (যেমন: sb-jamalNT) বা আইডি (যেমন: SCN-0001) দিয়ে লগইন করুন।</p>
+        </div>
+
+        <div class="flex gap-2">
+          <input type="text" id="client-login-input" placeholder="sb-jamalNT বা SCN-0001" class="flex-1 bg-slate-950 border border-slate-700 px-4 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400">
+          <button onclick="clientLogin()" class="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition">লগইন</button>
+        </div>
+
+        <!-- Logged in Client Card -->
+        <div id="client-dashboard-card" class="hidden mt-6 pt-6 border-t border-slate-800 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 id="cportal-name" class="text-lg font-bold text-white">গ্রাহক নাম</h3>
+              <div id="cportal-id" class="text-xs text-cyan-300 font-mono">SCN-0001</div>
+            </div>
+            <span id="cportal-status" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">Active (ON)</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 text-xs bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
+            <div>
+              <span class="text-slate-500 block">ইন্টারনেট প্যাকেজ:</span>
+              <strong id="cportal-package" class="text-white">15 Mbps</strong>
+            </div>
+            <div>
+              <span class="text-slate-500 block">বর্তমান বকেয়া:</span>
+              <strong id="cportal-due" class="text-rose-400">৳ ০</strong>
+            </div>
+          </div>
+
+          <!-- SPECIAL ROUTER REMOTE MANAGEMENT BUTTON & PASSWORD -->
+          <div class="bg-gradient-to-r from-cyan-950/60 to-slate-950 p-4 rounded-2xl border border-cyan-500/30 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-xs font-bold text-white block">রাউটার রিমোট কন্ট্রোল</span>
+                <span id="cportal-router-model" class="text-[11px] text-slate-400">TP-Link Archer C6</span>
+              </div>
+              <a id="cportal-router-link" href="#" target="_blank" class="px-4 py-1.5 rounded-xl bg-cyan-500 text-slate-950 font-extrabold text-xs">Router Manage ↗</a>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-800">
+              <div>
+                <span class="text-slate-500 block text-[10px]">রাউটার আইপি</span>
+                <span id="cportal-router-ip" class="font-mono text-cyan-300 font-bold">192.168.0.1</span>
+              </div>
+              <div>
+                <span class="text-slate-500 block text-[10px]">অ্যাডমিন পাসওয়ার্ড</span>
+                <span id="cportal-router-pass" class="font-mono text-amber-300 font-bold">admin</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PRINTABLE RECEIPT MODAL -->
+  <div id="receipt-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
+    <div class="bg-white text-slate-900 rounded-3xl w-full max-w-lg p-6 shadow-2xl relative">
+      <div class="no-print flex items-center justify-between pb-3 border-b border-slate-200">
+        <span class="text-xs font-bold text-slate-500">অফিসিয়াল মানি রশিদ</span>
+        <div class="flex gap-2">
+          <button onclick="window.print()" class="px-3 py-1 rounded-lg bg-cyan-600 text-white text-xs font-bold">প্রিন্ট</button>
+          <button onclick="closeReceiptModal()" class="text-slate-400 hover:text-black font-bold">✕</button>
+        </div>
+      </div>
+
+      <div class="pt-4 space-y-3 text-xs">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-lg font-black text-slate-900">SCN [Shilok Cable Network]</div>
+            <div class="text-[10px] text-emerald-700 font-bold">❖ সবার জন্য ইন্টারনেট ❖</div>
+          </div>
+          <div id="receipt-qr" class="w-16 h-16 bg-slate-100 flex items-center justify-center border"></div>
+        </div>
+
+        <div class="border-t border-b border-slate-200 py-2 space-y-1">
+          <div class="flex justify-between">
+            <span class="text-slate-500">রশিদ নং:</span>
+            <strong id="rec-id" class="font-mono">RCP-001</strong>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">গ্রাহকের নাম:</span>
+            <strong id="rec-client">জামাল উদ্দিন</strong>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">বিলের মাস:</span>
+            <span id="rec-month">নভেম্বর ২০২৬</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">কালেক্টর:</span>
+            <span id="rec-collector">কালেক্টর ১</span>
+          </div>
+        </div>
+
+        <div class="flex justify-between text-base font-black text-emerald-700 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+          <span>মোট জমাকৃত টাকা:</span>
+          <span id="rec-amount">৳ ৮০০</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APP LOGIC & GOOGLE APPS SCRIPT INTEGRATION -->
+  <script>
+    // App State
+    let appData = {
+      clients: [],
+      collections: [],
+      editRequests: [],
+      currentMonth: 'নভেম্বর ২০২৬'
+    };
+
+    let selectedClientForCollection = null;
+    let activeCollectorId = 'C1';
+
+    // Mock initial data if running locally outside GAS
+    const LOCAL_MOCK = {
+      currentMonth: 'নভেম্বর ২০২৬',
+      clients: [
+        {
+          serial: 1, id: 'SCN-0001', status: 'active', clientName: 'জামাল উদ্দিন চৌধুরী',
+          fatherName: 'মরহুম নুরুল ইসলাম', mobile: '01811-223344', area: 'শিলক বাজার',
+          address: 'শিলক বাজার মেইন রোড', boxNo: 'BOX-01', ipAddress: '192.168.88.11',
+          pppoeUsername: 'sb-jamalNT', packageSpeed: '15 Mbps Unlimited', monthlyFee: 800,
+          previousDue: 0, currentMonthBill: 800, paidThisMonth: 800, totalDue: 0,
+          router: { model: 'TP-Link Archer C6', ip: '192.168.0.1', username: 'admin', password: 'scn@jamal2024' }
+        },
+        {
+          serial: 2, id: 'SCN-0002', status: 'active', clientName: 'মো. মনিরুল ইসলাম',
+          fatherName: 'আব্দুল মোতালেব', mobile: '01712-334455', area: 'দক্ষিণ শিলক',
+          address: 'মাস্টার পাড়া', boxNo: 'BOX-03', ipAddress: '192.168.88.14',
+          pppoeUsername: 'sb-monir02', packageSpeed: '10 Mbps Standard', monthlyFee: 500,
+          previousDue: 500, currentMonthBill: 500, paidThisMonth: 0, totalDue: 1000,
+          router: { model: 'Tenda F3', ip: '192.168.1.1', username: 'admin', password: 'user@monir2023' }
+        }
+      ],
+      collections: []
+    };
+
+    // Load data from Google Sheet or Local Fallback
+    function loadAllDataFromSheet() {
+      const spinner = document.getElementById('sync-spinner');
+      if (spinner) spinner.classList.add('animate-spin');
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (spinner) spinner.classList.remove('animate-spin');
+            appData = res;
+            updateUI();
+          })
+          .withFailureHandler(function(err) {
+            if (spinner) spinner.classList.remove('animate-spin');
+            console.error('GAS Error', err);
+            appData = LOCAL_MOCK;
+            updateUI();
+          })
+          .getAllData();
+      } else {
+        // Fallback for local development
+        setTimeout(() => {
+          if (spinner) spinner.classList.remove('animate-spin');
+          appData = LOCAL_MOCK;
+          updateUI();
+        }, 300);
+      }
+    }
+
+    // Switch Tabs
+    function switchTab(tabId) {
+      ['dashboard', 'excel', 'collector', 'print', 'client_portal'].forEach(id => {
+        const el = document.getElementById('tab-' + id);
+        const btn = document.getElementById('btn-' + id);
+        if (el) el.classList.add('hidden');
+        if (btn) {
+          btn.classList.remove('bg-cyan-500', 'text-slate-950');
+          btn.classList.add('text-slate-400');
+        }
+      });
+
+      const target = document.getElementById('tab-' + tabId);
+      const targetBtn = document.getElementById('btn-' + tabId);
+      if (target) target.classList.remove('hidden');
+      if (targetBtn) {
+        targetBtn.classList.add('bg-cyan-500', 'text-slate-950');
+        targetBtn.classList.remove('text-slate-400');
+      }
+    }
+
+    // Update all UI elements
+    function updateUI() {
+      const clients = appData.clients || [];
+      const collections = appData.collections || [];
+
+      // Update KPI
+      const activeCount = clients.filter(c => c.status === 'active').length;
+      const expected = clients.reduce((acc, c) => acc + (c.status === 'active' ? c.monthlyFee : 0) + (c.previousDue || 0), 0);
+      const collected = collections.reduce((acc, c) => acc + (c.amount || 0), 0);
+      const due = Math.max(0, expected - collected);
+
+      document.getElementById('stat-total-clients').innerText = clients.length + ' জন';
+      document.getElementById('stat-active-clients').innerText = activeCount + ' জন সচল (ON)';
+      document.getElementById('stat-total-expected').innerText = '৳ ' + expected.toLocaleString('bn-BD');
+      document.getElementById('stat-total-collected').innerText = '৳ ' + collected.toLocaleString('bn-BD');
+      document.getElementById('stat-receipt-count').innerText = collections.length + ' টি রশিদ';
+      document.getElementById('stat-total-due').innerText = '৳ ' + due.toLocaleString('bn-BD');
+
+      // Collector Totals
+      const c1Total = collections.filter(c => c.collectorId === 'C1').reduce((a, b) => a + b.amount, 0);
+      const c2Total = collections.filter(c => c.collectorId === 'C2').reduce((a, b) => a + b.amount, 0);
+      document.getElementById('c1-total-amount').innerText = '৳ ' + c1Total.toLocaleString('bn-BD');
+      document.getElementById('c2-total-amount').innerText = '৳ ' + c2Total.toLocaleString('bn-BD');
+
+      renderExcelTable();
+      renderPrintSheet();
+    }
+
+    // Render Excel Table
+    function renderExcelTable() {
+      const tbody = document.getElementById('excel-table-body');
+      if (!tbody) return;
+      const search = (document.getElementById('excel-search')?.value || '').toLowerCase();
+
+      const filtered = appData.clients.filter(c => {
+        if (!search) return true;
+        return c.clientName.toLowerCase().includes(search) ||
+               c.id.toLowerCase().includes(search) ||
+               c.pppoeUsername.toLowerCase().includes(search) ||
+               c.mobile.includes(search);
+      });
+
+      tbody.innerHTML = filtered.map(c => `
+        <tr class="hover:bg-slate-800/40 border-b border-slate-800/60">
+          <td class="py-2.5 px-3 font-bold">${c.serial}</td>
+          <td class="py-2.5 px-3 font-mono text-cyan-300 font-bold">${c.id}</td>
+          <td class="py-2.5 px-3">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">${c.status === 'active' ? 'ON' : 'OFF'}</span>
+          </td>
+          <td class="py-2.5 px-3 font-bold text-white">${c.clientName}</td>
+          <td class="py-2.5 px-3 font-mono">${c.mobile}</td>
+          <td class="py-2.5 px-3">${c.area} (${c.boxNo})</td>
+          <td class="py-2.5 px-3 font-mono text-cyan-300">${c.pppoeUsername}</td>
+          <td class="py-2.5 px-3 font-mono">${c.ipAddress}</td>
+          <td class="py-2.5 px-3">${c.packageSpeed}</td>
+          <td class="py-2.5 px-3 text-right font-bold">৳${c.monthlyFee}</td>
+          <td class="py-2.5 px-3 text-right text-amber-400">৳${c.previousDue || 0}</td>
+          <td class="py-2.5 px-3 text-right font-bold text-rose-400">৳${c.totalDue || 0}</td>
+          <td class="py-2.5 px-3 font-mono text-cyan-400">${c.router?.ip || ''} (${c.router?.password || ''})</td>
+        </tr>
+      `).join('');
+    }
+
+    // Render Print Sheet
+    function renderPrintSheet() {
+      const tbody = document.getElementById('print-sheet-body');
+      if (!tbody) return;
+      tbody.innerHTML = appData.clients.map(c => `
+        <tr class="border-b border-slate-300">
+          <td class="border border-slate-400 p-1 text-center">${c.serial}</td>
+          <td class="border border-slate-400 p-1 font-mono font-bold">${c.id} <br/><span class="text-[9px] font-normal">${c.pppoeUsername}</span></td>
+          <td class="border border-slate-400 p-1 font-bold">${c.clientName}</td>
+          <td class="border border-slate-400 p-1 font-mono">${c.mobile}</td>
+          <td class="border border-slate-400 p-1">${c.area} (${c.boxNo})</td>
+          <td class="border border-slate-400 p-1 text-right">৳${c.monthlyFee}</td>
+          <td class="border border-slate-400 p-1 text-right text-rose-700">৳${c.previousDue || 0}</td>
+          <td class="border border-slate-400 p-1 text-right font-bold bg-slate-100">৳${(c.previousDue || 0) + (c.status === 'active' ? c.monthlyFee : 0)}</td>
+          <td class="border border-slate-400 p-1 text-center font-bold text-emerald-700">${c.paidThisMonth > 0 ? '৳' + c.paidThisMonth : ''}</td>
+          <td class="border border-slate-400 p-1 text-center"></td>
+        </tr>
+      `).join('');
+    }
+
+    // Collector Search
+    function renderCollectorSearch() {
+      const q = (document.getElementById('collector-client-search')?.value || '').toLowerCase();
+      const container = document.getElementById('collector-search-results');
+      if (!container) return;
+
+      if (!q) {
+        container.innerHTML = '';
+        return;
+      }
+
+      const results = appData.clients.filter(c =>
+        c.clientName.toLowerCase().includes(q) ||
+        c.id.toLowerCase().includes(q) ||
+        c.pppoeUsername.toLowerCase().includes(q) ||
+        c.mobile.includes(q)
+      );
+
+      container.innerHTML = results.map(c => `
+        <div onclick="selectClientForBill('${c.id}')" class="p-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-400 cursor-pointer flex justify-between items-center">
+          <div>
+            <div class="font-bold text-white text-xs">${c.clientName}</div>
+            <div class="text-[10px] text-cyan-300 font-mono">${c.id} • ${c.pppoeUsername}</div>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400 block">বকেয়া</span>
+            <span class="font-bold text-amber-400 text-xs">৳${c.totalDue || c.monthlyFee}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function selectClientForBill(clientId) {
+      selectedClientForCollection = appData.clients.find(c => c.id === clientId);
+      if (!selectedClientForCollection) return;
+
+      const preview = document.getElementById('selected-client-preview');
+      preview.innerHTML = `
+        <div class="flex justify-between items-center text-white">
+          <div>
+            <strong class="text-sm">${selectedClientForCollection.clientName}</strong>
+            <div class="text-[11px] text-cyan-300 font-mono">${selectedClientForCollection.id} • PPPoE: ${selectedClientForCollection.pppoeUsername}</div>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400 block">মোট প্রদেয়</span>
+            <span class="text-base font-black text-amber-400">৳${selectedClientForCollection.totalDue || selectedClientForCollection.monthlyFee}</span>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('input-amount').value = selectedClientForCollection.totalDue || selectedClientForCollection.monthlyFee;
+      document.getElementById('collection-error-box').classList.add('hidden');
+    }
+
+    function onCollectorChanged() {
+      activeCollectorId = document.getElementById('collector-select').value;
+    }
+
+    function selectCollector(cId) {
+      activeCollectorId = cId;
+      document.getElementById('collector-select').value = cId;
+    }
+
+    // Submit Bill Collection to Google Sheet
+    function submitBillCollection() {
+      if (!selectedClientForCollection) {
+        alert('অনুগ্রহ করে ক্লায়েন্ট সিলেক্ট করুন');
+        return;
+      }
+      const amount = Number(document.getElementById('input-amount').value);
+      if (!amount || amount <= 0) {
+        alert('সঠিক টাকার পরিমাণ দিন');
+        return;
+      }
+
+      const method = document.getElementById('input-method').value;
+      const collectorName = activeCollectorId === 'C1' ? 'জামাল আহমেদ (কালেক্টর ১)' : 'কামাল হোসেন (কালেক্টর ২)';
+
+      const payload = {
+        clientId: selectedClientForCollection.id,
+        clientName: selectedClientForCollection.clientName,
+        pppoeUsername: selectedClientForCollection.pppoeUsername,
+        collectorId: activeCollectorId,
+        collectorName: collectorName,
+        amount: amount,
+        month: appData.currentMonth,
+        method: method
+      };
+
+      const btn = document.getElementById('btn-submit-collection');
+      btn.innerText = 'জমা হচ্ছে... অপেক্ষা করুন...';
+      btn.disabled = true;
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            btn.innerText = 'বিল জমা করুন ও রশিদ প্রস্তুত করুন';
+            btn.disabled = false;
+            if (res.success) {
+              loadAllDataFromSheet();
+              showReceiptModal(res.receipt);
+            } else {
+              const errBox = document.getElementById('collection-error-box');
+              errBox.innerText = res.message;
+              errBox.classList.remove('hidden');
+            }
+          })
+          .recordCollection(payload);
+      } else {
+        // Local simulation
+        setTimeout(() => {
+          btn.innerText = 'বিল জমা করুন ও রশিদ প্রস্তুত করুন';
+          btn.disabled = false;
+          showReceiptModal({
+            id: 'RCP-LOCAL-001',
+            clientName: payload.clientName,
+            month: payload.month,
+            collectorName: payload.collectorName,
+            amount: payload.amount
+          });
+        }, 500);
+      }
+    }
+
+    // Receipt Modal & QR
+    function showReceiptModal(receipt) {
+      document.getElementById('rec-id').innerText = receipt.id;
+      document.getElementById('rec-client').innerText = receipt.clientName;
+      document.getElementById('rec-month').innerText = receipt.month;
+      document.getElementById('rec-collector').innerText = receipt.collectorName;
+      document.getElementById('rec-amount').innerText = '৳ ' + receipt.amount;
+
+      const qrContainer = document.getElementById('receipt-qr');
+      qrContainer.innerHTML = '';
+      if (typeof QRCode !== 'undefined') {
+        new QRCode(qrContainer, {
+          text: JSON.stringify({ org: 'SCN Shilok Cable Network', id: receipt.id, amount: receipt.amount, verified: true }),
+          width: 64,
+          height: 64
+        });
+      }
+
+      document.getElementById('receipt-modal').classList.remove('hidden');
+    }
+
+    function closeReceiptModal() {
+      document.getElementById('receipt-modal').classList.add('hidden');
+    }
+
+    // Client Portal Passwordless Login
+    function clientLogin() {
+      const q = (document.getElementById('client-login-input').value || '').trim().toLowerCase();
+      if (!q) {
+        alert('আপনার PPPoE ইউজার বা ক্লায়েন্ট আইডি লিখুন');
+        return;
+      }
+
+      const client = appData.clients.find(c =>
+        c.pppoeUsername.toLowerCase() === q ||
+        c.id.toLowerCase() === q ||
+        c.mobile.includes(q)
+      );
+
+      if (!client) {
+        alert('কোন গ্রাহক মেলেনি! সঠিক PPPoE (যেমন: sb-jamalNT) লিখুন।');
+        return;
+      }
+
+      const card = document.getElementById('client-dashboard-card');
+      card.classList.remove('hidden');
+      document.getElementById('cportal-name').innerText = client.clientName;
+      document.getElementById('cportal-id').innerText = client.id + ' • PPPoE: ' + client.pppoeUsername;
+      document.getElementById('cportal-package').innerText = client.packageSpeed + ' (৳' + client.monthlyFee + ')';
+      document.getElementById('cportal-due').innerText = '৳ ' + (client.totalDue || 0);
+
+      document.getElementById('cportal-router-model').innerText = client.router?.model || 'Router Gateway';
+      document.getElementById('cportal-router-ip').innerText = client.router?.ip || '192.168.0.1';
+      document.getElementById('cportal-router-pass').innerText = client.router?.password || 'admin';
+      
+      const rIp = client.router?.ip || '192.168.0.1';
+      document.getElementById('cportal-router-link').href = rIp.startsWith('http') ? rIp : 'http://' + rIp;
+    }
+
+    // On Load
+    window.addEventListener('DOMContentLoaded', function() {
+      loadAllDataFromSheet();
+    });
+  </script>
+
+</body>
+</html>
